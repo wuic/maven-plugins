@@ -2,12 +2,6 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0"
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-    <parent>
-        <artifactId>web-ui-compressor</artifactId>
-        <groupId>com.github.wuic</groupId>
-        <version>0.5.0-SNAPSHOT</version>
-    </parent>
-
     <modelVersion>4.0.0</modelVersion>
     <groupId>com.github.wuic.plugins</groupId>
     <artifactId>wuic-plugins</artifactId>
@@ -15,7 +9,7 @@
 
     <packaging>pom</packaging>
     <name>wuic-plugins</name>
-    <url>http://gdrouet.github.io/wuic/</url>
+    <url>http://wuic.github.io</url>
 
     <modules>
         <module>static-helper-maven-plugin</module>
@@ -65,4 +59,14 @@
             </dependency>
         </dependencies>
     </dependencyManagement>
+
+    <properties>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <java-source.version>1.6</java-source.version>
+        <junit.version>4.8.2</junit.version>
+        <mockito.version>1.9.5</mockito.version>
+        <maven.version>2.0</maven.version>
+        <maven-plugin.version>3.2</maven-plugin.version>
+        <slf4j.version>1.7.5</slf4j.version>
+    </properties>
 </project>
