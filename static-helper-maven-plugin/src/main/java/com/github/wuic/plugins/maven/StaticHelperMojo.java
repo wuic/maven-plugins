@@ -39,8 +39,7 @@
 package com.github.wuic.plugins.maven;
 
 import com.github.wuic.WuicFacade;
-import com.github.wuic.engine.core.StaticEngineBuilder;
-import com.github.wuic.engine.impl.embedded.StaticEngine;
+import com.github.wuic.engine.core.StaticEngine;
 import com.github.wuic.exception.WuicException;
 import com.github.wuic.nut.Nut;
 import com.github.wuic.util.IOUtils;
@@ -177,7 +176,7 @@ public class StaticHelperMojo extends AbstractMojo {
         final XmlWuicBean bean = (XmlWuicBean) unmarshaller.unmarshal(xmlFile);
 
         // Override workflow definition
-        final String staticEngineName = "wuic" + StaticEngineBuilder.class.getSimpleName();
+        final String staticEngineName = "wuic" + StaticEngine.class.getSimpleName() + "Builder";
         final String workflowTemplateId = staticEngineName + "Template";
         final XmlWorkflowTemplateBean template = new XmlWorkflowTemplateBean();
         template.setEngineBuilderIds(Arrays.asList(staticEngineName));
@@ -204,7 +203,7 @@ public class StaticHelperMojo extends AbstractMojo {
         // Declare the static engine
         final XmlBuilderBean builder = new XmlBuilderBean();
         builder.setId(staticEngineName);
-        builder.setType(StaticEngineBuilder.class.getSimpleName());
+        builder.setType("StaticEngineBuilder");
 
         bean.setEngineBuilders(Arrays.asList(builder));
 
