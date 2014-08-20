@@ -43,6 +43,7 @@ import com.github.wuic.engine.core.StaticEngine;
 import com.github.wuic.exception.WuicException;
 import com.github.wuic.nut.Nut;
 import com.github.wuic.util.IOUtils;
+import com.github.wuic.util.NutUtils;
 import com.github.wuic.xml.XmlBuilderBean;
 import com.github.wuic.xml.XmlWorkflowBean;
 import com.github.wuic.xml.XmlWorkflowTemplateBean;
@@ -286,10 +287,10 @@ public class StaticHelperMojo extends AbstractMojo {
      * @throws FileNotFoundException if output directory can't be reached
      */
     public void write(final Nut nut, final String wId, final PrintWriter workflowWriter) throws WuicException, FileNotFoundException {
-        final String path = nut.getProxyUri() == null ? IOUtils.mergePath(nut.getVersionNumber().toString(), nut.getName()) : nut.getProxyUri();
+        final String path = nut.getProxyUri() == null ? IOUtils.mergePath(String.valueOf(NutUtils.getVersionNumber(nut)), nut.getName()) : nut.getProxyUri();
         workflowWriter.println(String.format("%s %s", path, nut.getNutType().getExtensions()[0]));
         final File file = new File(project.getBuild().getOutputDirectory().equals(output) ?
-                output : IOUtils.mergePath(project.getBuild().getDirectory(), output), IOUtils.mergePath(wId, nut.getVersionNumber().toString(), nut.getName()));
+                output : IOUtils.mergePath(project.getBuild().getDirectory(), output), IOUtils.mergePath(wId, String.valueOf(NutUtils.getVersionNumber(nut)), nut.getName()));
 
         // Create if not exist
         if (file.getParentFile() != null && file.getParentFile().mkdirs()) {
