@@ -39,6 +39,7 @@
 package com.github.wuic.plugins.maven;
 
 import com.github.wuic.WuicFacade;
+import com.github.wuic.WuicFacadeBuilder;
 import com.github.wuic.engine.core.StaticEngine;
 import com.github.wuic.exception.WuicException;
 import com.github.wuic.nut.Nut;
@@ -236,7 +237,10 @@ public class StaticHelperMojo extends AbstractMojo {
 
             // Load wuic.xml file and create facade
             final File xmlFile = new File(project.getBasedir(), xml);
-            final WuicFacade facade = WuicFacade.newInstance(contextPath, xmlFile.toURI().toURL(), Boolean.TRUE);
+            final WuicFacade facade = new WuicFacadeBuilder()
+                    .contextPath(contextPath)
+                    .wuicXmlPath(xmlFile.toURI().toURL())
+                    .build();
 
             // Now write each workflow result to disk with its description file
             for (final String wId : facade.workflowIds()) {
