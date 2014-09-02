@@ -40,11 +40,11 @@ package com.github.wuic.plugins.maven.test;
 
 import com.github.wuic.plugins.maven.StaticHelperMojo;
 import com.github.wuic.util.IOUtils;
-import junit.framework.Assert;
 import org.apache.maven.model.Build;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.project.MavenProject;
 import org.apache.maven.project.MavenProjectHelper;
+import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
