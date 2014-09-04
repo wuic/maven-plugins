@@ -35,24 +35,6 @@
             <artifactId>maven-artifact</artifactId>
             <scope>test</scope>
         </dependency>
-        <dependency>
-            <groupId>junit</groupId>
-            <artifactId>junit</artifactId>
-        </dependency>
-
-        <dependency>
-            <groupId>org.mockito</groupId>
-            <artifactId>mockito-core</artifactId>
-            <version>${mockito.version}</version>
-            <scope>test</scope>
-        </dependency>
-
-        <!-- In module, use the slf4j-simple artifact only in tests -->
-        <dependency>
-            <groupId>org.slf4j</groupId>
-            <artifactId>slf4j-simple</artifactId>
-            <version>${slf4j.version}</version>
-        </dependency>
     </dependencies>
 
     <build>
@@ -83,5 +65,4 @@
             </plugin>
         </plugins>
     </build>
-
 </project>
