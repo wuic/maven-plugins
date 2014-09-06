@@ -51,7 +51,10 @@ import org.junit.runners.JUnit4;
 import org.mockito.Mockito;
 
 import java.io.File;
-import java.net.MalformedURLException;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 
 /**
  * <p>
@@ -71,16 +74,13 @@ public class StaticHelperMojoTest {
      * </p>
      *
      * @throws MojoExecutionException if test fails
-     * @throws MalformedURLException if test fails
+     * @throws IOException if test fails
      */
     @Test
-    public void defaultTest() throws MojoExecutionException, MalformedURLException {
+    public void defaultTest() throws MojoExecutionException, IOException {
         final String wuicXml = IOUtils.normalizePathSeparator(getClass().getResource("/wuic.xml").toString());
         final String currentDir = IOUtils.normalizePathSeparator(new File(".").toURI().toURL().toString());
         final String relative =  wuicXml.substring(currentDir.length() - 2);
-        System.out.println(wuicXml);
-        System.out.println(currentDir);
-        System.out.println(relative);
 
         // Create MOJO
         final StaticHelperMojo mojo = new StaticHelperMojo();
@@ -92,8 +92,9 @@ public class StaticHelperMojoTest {
         // Mock
         final MavenProject mavenProject = Mockito.mock(MavenProject.class);
         final Build build = Mockito.mock(Build.class);
-        Mockito.when(build.getDirectory()).thenReturn(new File(System.getProperty("java.io.tmpdir"), "wuic-static-test").getAbsolutePath());
-        Mockito.when(build.getOutputDirectory()).thenReturn("");
+        final File out = new File(System.getProperty("java.io.tmpdir"), "wuic-static-test");
+        Mockito.when(build.getDirectory()).thenReturn(out.getAbsolutePath());
+        Mockito.when(build.getOutputDirectory()).thenReturn(out.getAbsolutePath());
         Mockito.when(mavenProject.getBuild()).thenReturn(build);
         Mockito.when(mavenProject.getBasedir()).thenReturn(new File("."));
         mojo.setMavenProject(mavenProject);
@@ -108,9 +109,56 @@ public class StaticHelperMojoTest {
         Assert.assertTrue(new File(parent, "js").listFiles()[0].list()[0].equals("aggregate.js"));
 
         Boolean found = Boolean.FALSE;
-        final File[] files = new File(parent,"css").listFiles();
+        File[] files = new File(parent, "css").listFiles();
 
         for (int i = 0; i < files.length && !found; found = files[i++].list()[0].equals("aggregate.css"));
         Assert.assertTrue(found);
+
+        InputStream is;
+        files = new File(parent, "html").listFiles();
+        File html = null;
+        for (int i = 0; i < files.length && html == null; html = files[i++].listFiles()[0].getName().endsWith(".html") ? files[i - 1].listFiles()[0] : null);
+        Assert.assertNotNull(html);
+
+        // Read html content
+        is = new FileInputStream(html);
+        final String htmlStr = IOUtils.readString(new InputStreamReader(is));
+        is.close();
+
+        // Extract URL (workflow and nut name)
+        final int start = htmlStr.indexOf("href=\"") + 7;
+        final int end = htmlStr.indexOf("\"", start);
+        final String url = htmlStr.substring(start, end);
+        final int endId = url.indexOf('/');
+        final String id = url.substring(0, endId);
+        final String nutPath = url.substring(endId + 1);
+
+        // Read metadata content
+        is = new FileInputStream(new File(out, "wuic-static/" + id));
+        final String wuicStatic = IOUtils.readString(new InputStreamReader(is));
+        is.close();
+
+        // Assert nut is known in metadata
+        Assert.assertTrue(nutPath + " not in:\n" + wuicStatic, wuicStatic.contains(nutPath));
+
+        // Assert resources are closed
+        delete(out);
+    }
+
+    /**
+     * <p>
+     * Deletes recursively given directory
+     * </p>
+     */
+    private void delete(final File dir) {
+        if (dir.isFile()) {
+            Assert.assertTrue(dir.getAbsolutePath(), dir.delete());
+        } else {
+            for (final File f : dir.listFiles()) {
+                delete(f);
+            }
+
+            Assert.assertTrue(dir.getAbsolutePath(), dir.delete());
+        }
     }
 }
