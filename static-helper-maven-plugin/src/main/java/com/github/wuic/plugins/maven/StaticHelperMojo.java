@@ -301,7 +301,16 @@ public class StaticHelperMojo extends AbstractMojo {
             log.debug("{} created", file.getParent());
         }
 
-        IOUtils.copyStream(nut.openStream(), new FileOutputStream(file));
+        InputStream is = null;
+        OutputStream os = null;
+
+        try {
+            is = nut.openStream();
+            os = new FileOutputStream(file);
+            IOUtils.copyStream(is, os);
+        } finally {
+            IOUtils.close(is, os);
+        }
 
         // Recursive call on referenced nuts
         if (nut.getReferencedNuts() != null) {
