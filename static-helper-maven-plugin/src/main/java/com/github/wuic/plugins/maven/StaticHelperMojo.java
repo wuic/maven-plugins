@@ -42,7 +42,7 @@ import com.github.wuic.WuicFacade;
 import com.github.wuic.WuicFacadeBuilder;
 import com.github.wuic.engine.core.StaticEngine;
 import com.github.wuic.exception.WuicException;
-import com.github.wuic.nut.Nut;
+import com.github.wuic.nut.ConvertibleNut;
 import com.github.wuic.util.IOUtils;
 import com.github.wuic.util.NutUtils;
 import com.github.wuic.xml.XmlBuilderBean;
@@ -51,8 +51,12 @@ import com.github.wuic.xml.XmlWorkflowTemplateBean;
 import com.github.wuic.xml.XmlWuicBean;
 import org.apache.maven.model.Resource;
 import org.apache.maven.plugin.AbstractMojo;
-import org.apache.maven.plugins.annotations.*;
 import org.apache.maven.plugin.MojoExecutionException;
+import org.apache.maven.plugins.annotations.Component;
+import org.apache.maven.plugins.annotations.LifecyclePhase;
+import org.apache.maven.plugins.annotations.Mojo;
+import org.apache.maven.plugins.annotations.Parameter;
+import org.apache.maven.plugins.annotations.ResolutionScope;
 import org.apache.maven.project.MavenProject;
 import org.apache.maven.project.MavenProjectHelper;
 import org.slf4j.Logger;
@@ -62,7 +66,13 @@ import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Marshaller;
 import javax.xml.bind.Unmarshaller;
-import java.io.*;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.io.PrintWriter;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.net.MalformedURLException;
@@ -254,9 +264,9 @@ public class StaticHelperMojo extends AbstractMojo {
                     }
 
                     pw = new PrintWriter(file);
-                    final List<Nut> nuts = facade.runWorkflow(wId);
+                    final List<ConvertibleNut> nuts = facade.runWorkflow(wId);
 
-                    for (final Nut nut : nuts) {
+                    for (final ConvertibleNut nut : nuts) {
                         write(nut, wId, pw);
                     }
                 } finally {
@@ -290,7 +300,7 @@ public class StaticHelperMojo extends AbstractMojo {
      * @throws WuicException if WUIC fails
      * @throws FileNotFoundException if output directory can't be reached
      */
-    public void write(final Nut nut, final String wId, final PrintWriter workflowWriter) throws WuicException, FileNotFoundException {
+    public void write(final ConvertibleNut nut, final String wId, final PrintWriter workflowWriter) throws WuicException, FileNotFoundException {
         final String path = nut.getProxyUri() == null ? IOUtils.mergePath(String.valueOf(NutUtils.getVersionNumber(nut)), nut.getName()) : nut.getProxyUri();
         workflowWriter.println(String.format("%s %s", path, nut.getNutType().getExtensions()[0]));
         final File file = new File(project.getBuild().getOutputDirectory().equals(output) ?
@@ -314,7 +324,7 @@ public class StaticHelperMojo extends AbstractMojo {
 
         // Recursive call on referenced nuts
         if (nut.getReferencedNuts() != null) {
-            for (final Nut ref : nut.getReferencedNuts()) {
+            for (final ConvertibleNut ref : nut.getReferencedNuts()) {
                 write(ref, wId, workflowWriter);
             }
         }
