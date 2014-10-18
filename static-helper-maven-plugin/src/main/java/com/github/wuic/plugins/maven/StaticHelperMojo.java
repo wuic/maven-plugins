@@ -67,10 +67,8 @@ import javax.xml.bind.JAXBException;
 import javax.xml.bind.Marshaller;
 import javax.xml.bind.Unmarshaller;
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.lang.reflect.InvocationTargetException;
@@ -298,9 +296,9 @@ public class StaticHelperMojo extends AbstractMojo {
      * @param wId the workflow ID
      * @param workflowWriter the workflow print writer
      * @throws WuicException if WUIC fails
-     * @throws FileNotFoundException if output directory can't be reached
+     * @throws IOException if output directory can't be reached or if transformation fails
      */
-    public void write(final ConvertibleNut nut, final String wId, final PrintWriter workflowWriter) throws WuicException, FileNotFoundException {
+    public void write(final ConvertibleNut nut, final String wId, final PrintWriter workflowWriter) throws WuicException, IOException {
         final String path = nut.getProxyUri() == null ? IOUtils.mergePath(String.valueOf(NutUtils.getVersionNumber(nut)), nut.getName()) : nut.getProxyUri();
         workflowWriter.println(String.format("%s %s", path, nut.getNutType().getExtensions()[0]));
         final File file = new File(project.getBuild().getOutputDirectory().equals(output) ?
@@ -311,15 +309,13 @@ public class StaticHelperMojo extends AbstractMojo {
             log.debug("{} created", file.getParent());
         }
 
-        InputStream is = null;
         OutputStream os = null;
 
         try {
-            is = nut.openStream();
             os = new FileOutputStream(file);
-            IOUtils.copyStream(is, os);
+            nut.transform(os);
         } finally {
-            IOUtils.close(is, os);
+            IOUtils.close(os);
         }
 
         // Recursive call on referenced nuts
