@@ -45,6 +45,7 @@ import com.github.wuic.exception.WuicException;
 import com.github.wuic.nut.ConvertibleNut;
 import com.github.wuic.util.IOUtils;
 import com.github.wuic.util.NutUtils;
+import com.github.wuic.util.Pipe;
 import com.github.wuic.xml.XmlBuilderBean;
 import com.github.wuic.xml.XmlWorkflowBean;
 import com.github.wuic.xml.XmlWorkflowTemplateBean;
@@ -313,7 +314,17 @@ public class StaticHelperMojo extends AbstractMojo {
 
         try {
             os = new FileOutputStream(file);
-            nut.transform(os);
+            final OutputStream finalOs = os;
+            nut.transform(new Pipe.OnReady() {
+
+                /**
+                 * {@inheritDoc}
+                 */
+                @Override
+                public void ready(final Pipe.Execution e) throws IOException {
+                    e.writeResultTo(finalOs);
+                }
+            });
         } finally {
             IOUtils.close(os);
         }
