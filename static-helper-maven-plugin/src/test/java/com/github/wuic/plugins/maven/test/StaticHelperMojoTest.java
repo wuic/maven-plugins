@@ -39,6 +39,7 @@
 package com.github.wuic.plugins.maven.test;
 
 import com.github.wuic.plugins.maven.StaticHelperMojo;
+import com.github.wuic.test.TestHelper;
 import com.github.wuic.util.IOUtils;
 import org.apache.maven.model.Build;
 import org.apache.maven.plugin.MojoExecutionException;
@@ -142,23 +143,6 @@ public class StaticHelperMojoTest {
         Assert.assertTrue(nutPath + " not in:\n" + wuicStatic, wuicStatic.contains(nutPath));
 
         // Assert resources are closed
-        delete(out);
-    }
-
-    /**
-     * <p>
-     * Deletes recursively given directory
-     * </p>
-     */
-    private void delete(final File dir) {
-        if (dir.isFile()) {
-            Assert.assertTrue(dir.getAbsolutePath(), dir.delete());
-        } else {
-            for (final File f : dir.listFiles()) {
-                delete(f);
-            }
-
-            Assert.assertTrue(dir.getAbsolutePath(), dir.delete());
-        }
+        TestHelper.delete(out);
     }
 }
