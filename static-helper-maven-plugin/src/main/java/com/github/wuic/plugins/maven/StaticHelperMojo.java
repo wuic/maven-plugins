@@ -310,24 +310,8 @@ public class StaticHelperMojo extends AbstractMojo {
             log.debug("{} created", file.getParent());
         }
 
-        OutputStream os = null;
-
-        try {
-            os = new FileOutputStream(file);
-            final OutputStream finalOs = os;
-            nut.transform(new Pipe.OnReady() {
-
-                /**
-                 * {@inheritDoc}
-                 */
-                @Override
-                public void ready(final Pipe.Execution e) throws IOException {
-                    e.writeResultTo(finalOs);
-                }
-            });
-        } finally {
-            IOUtils.close(os);
-        }
+        final OutputStream os = new FileOutputStream(file);
+        nut.transform(new Pipe.DefaultOnReady(os));
 
         // Recursive call on referenced nuts
         if (nut.getReferencedNuts() != null) {
