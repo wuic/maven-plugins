@@ -266,7 +266,7 @@ public class StaticHelperMojo extends AbstractMojo {
                     final List<ConvertibleNut> nuts = facade.runWorkflow(wId);
 
                     for (final ConvertibleNut nut : nuts) {
-                        write(nut, wId, pw);
+                        write(nut, wId, pw, 0);
                     }
                 } finally {
                     IOUtils.close(pw);
@@ -295,12 +295,18 @@ public class StaticHelperMojo extends AbstractMojo {
      *
      * @param nut the nut to be written
      * @param wId the workflow ID
-     * @param workflowWriter the workflow print writer
+     * @param depth the depth computed from referenced nuts chain
      * @throws WuicException if WUIC fails
      * @throws IOException if output directory can't be reached or if transformation fails
      */
-    public void write(final ConvertibleNut nut, final String wId, final PrintWriter workflowWriter) throws WuicException, IOException {
+    public void write(final ConvertibleNut nut, final String wId, final PrintWriter workflowWriter, final int depth)
+            throws WuicException, IOException {
         final String path = nut.getProxyUri() == null ? IOUtils.mergePath(String.valueOf(NutUtils.getVersionNumber(nut)), nut.getName()) : nut.getProxyUri();
+
+        for (int i = 0; i < depth; i++) {
+            workflowWriter.print('\t');
+        }
+
         workflowWriter.println(String.format("%s %s", path, nut.getNutType().getExtensions()[0]));
         final File file = new File(project.getBuild().getOutputDirectory().equals(output) ?
                 output : IOUtils.mergePath(project.getBuild().getDirectory(), output), IOUtils.mergePath(wId, String.valueOf(NutUtils.getVersionNumber(nut)), nut.getName()));
@@ -316,7 +322,7 @@ public class StaticHelperMojo extends AbstractMojo {
         // Recursive call on referenced nuts
         if (nut.getReferencedNuts() != null) {
             for (final ConvertibleNut ref : nut.getReferencedNuts()) {
-                write(ref, wId, workflowWriter);
+                write(ref, wId, workflowWriter, depth + 1);
             }
         }
     }
