@@ -307,7 +307,7 @@ public class StaticHelperMojo extends AbstractMojo {
             workflowWriter.print('\t');
         }
 
-        workflowWriter.println(String.format("%s %s", path, nut.getNutType().getExtensions()[0]));
+        workflowWriter.println(String.format("%s %s", path, nut.getInitialNutType().getExtensions()[0]));
         final File file = new File(project.getBuild().getOutputDirectory().equals(output) ?
                 output : IOUtils.mergePath(project.getBuild().getDirectory(), output), IOUtils.mergePath(wId, String.valueOf(NutUtils.getVersionNumber(nut)), nut.getName()));
 
