@@ -5,7 +5,7 @@
     <parent>
         <artifactId>wuic-plugins</artifactId>
         <groupId>com.github.wuic.plugins</groupId>
-        <version>0.5.2.RC1</version>
+        <version>0.5.2-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
 
