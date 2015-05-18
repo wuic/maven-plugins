@@ -38,6 +38,7 @@
 
 package com.github.wuic.plugins.maven;
 
+import com.github.wuic.ProcessContext;
 import com.github.wuic.WuicFacade;
 import com.github.wuic.WuicFacadeBuilder;
 import com.github.wuic.engine.core.StaticEngine;
@@ -263,7 +264,7 @@ public class StaticHelperMojo extends AbstractMojo {
                     }
 
                     pw = new PrintWriter(file);
-                    final List<ConvertibleNut> nuts = facade.runWorkflow(wId);
+                    final List<ConvertibleNut> nuts = facade.runWorkflow(wId, ProcessContext.DEFAULT);
 
                     for (final ConvertibleNut nut : nuts) {
                         write(nut, wId, pw, 0);
