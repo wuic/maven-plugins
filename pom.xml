@@ -15,6 +15,7 @@
 
     <modules>
         <module>static-helper-maven-plugin</module>
+        <module>metadata-generator-maven-plugin</module>
     </modules>
 
     <packaging>pom</packaging>
