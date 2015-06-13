@@ -80,13 +80,14 @@ public class StaticHelperMojoTest {
     @Test
     public void defaultTest() throws MojoExecutionException, IOException {
         final String wuicXml = IOUtils.normalizePathSeparator(getClass().getResource("/wuic.xml").toString());
+        final String wuicProperties = IOUtils.normalizePathSeparator(getClass().getResource("/wuic.properties").toString());
         final String currentDir = IOUtils.normalizePathSeparator(new File(".").toURI().toURL().toString());
-        final String relative =  wuicXml.substring(currentDir.length() - 2);
 
         // Create MOJO
         final StaticHelperMojo mojo = new StaticHelperMojo();
         mojo.setRelocateTransformedXml(Boolean.TRUE);
-        mojo.setXml(relative);
+        mojo.setXml(wuicXml.substring(currentDir.length() - 2));
+        mojo.setProperties(wuicProperties.substring(currentDir.length() - 2));
         mojo.setOutput("generated");
         mojo.setContextPath("/");
 

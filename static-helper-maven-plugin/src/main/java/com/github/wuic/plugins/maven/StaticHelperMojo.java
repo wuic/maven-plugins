@@ -85,6 +85,7 @@ import java.util.List;
  * <p>
  * This MOJO helps to process nuts for static usage. "Static" means that nuts can't be processed at runtime so we have
  * to invoke engine's chain of responsibility at build-time. This plugin supports only configuration from XML file.
+ * An optional 'wuic.properties' file location could be also specified.
  * </p>
  *
  * @author Guillaume DROUET
@@ -123,6 +124,12 @@ public class StaticHelperMojo extends AbstractMojo {
      */
     @Parameter(required = true)
     private String xml;
+
+    /**
+     * The "properties" configuration parameter.
+     */
+    @Parameter
+    private String properties;
 
     /**
      * Includes the transformed XML file as source file named 'wuic.xml'.
@@ -247,10 +254,18 @@ public class StaticHelperMojo extends AbstractMojo {
 
             // Load wuic.xml file and create facade
             final File xmlFile = new File(project.getBasedir(), xml);
-            final WuicFacade facade = new WuicFacadeBuilder()
+            final WuicFacadeBuilder facadeBuilder = new WuicFacadeBuilder()
                     .contextPath(contextPath)
-                    .wuicXmlPath(xmlFile.toURI().toURL())
-                    .build();
+                    .wuicXmlPath(xmlFile.toURI().toURL());
+
+            final WuicFacade facade;
+
+            if (properties == null) {
+                facade = facadeBuilder.build();
+            } else {
+                final File propertyFile = new File(project.getBasedir(), properties);
+                facade = facadeBuilder.wuicPropertiesPath(propertyFile.toURI().toURL()).build();
+            }
 
             // Now write each workflow result to disk with its description file
             for (final String wId : facade.workflowIds()) {
@@ -337,6 +352,17 @@ public class StaticHelperMojo extends AbstractMojo {
      */
     public void setXml(final String x) {
         xml = x;
+    }
+
+    /**
+     * <p>
+     * Sets the "properties" configuration parameter.
+     * </p>
+     *
+     * @param properties the properties
+     */
+    public void setProperties(final String properties) {
+        this.properties = properties;
     }
 
     /**
