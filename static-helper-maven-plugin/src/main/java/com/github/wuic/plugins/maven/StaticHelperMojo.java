@@ -38,19 +38,10 @@
 
 package com.github.wuic.plugins.maven;
 
-import com.github.wuic.ProcessContext;
-import com.github.wuic.WuicFacade;
-import com.github.wuic.WuicFacadeBuilder;
-import com.github.wuic.engine.core.StaticEngine;
+import com.github.wuic.WuicTask;
 import com.github.wuic.exception.WuicException;
-import com.github.wuic.nut.ConvertibleNut;
 import com.github.wuic.util.IOUtils;
-import com.github.wuic.util.NutUtils;
-import com.github.wuic.util.Pipe;
-import com.github.wuic.xml.XmlBuilderBean;
-import com.github.wuic.xml.XmlWorkflowBean;
-import com.github.wuic.xml.XmlWorkflowTemplateBean;
-import com.github.wuic.xml.XmlWuicBean;
+import org.apache.maven.model.Build;
 import org.apache.maven.model.Resource;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
@@ -61,24 +52,15 @@ import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.plugins.annotations.ResolutionScope;
 import org.apache.maven.project.MavenProject;
 import org.apache.maven.project.MavenProjectHelper;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
-import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
-import javax.xml.bind.Marshaller;
-import javax.xml.bind.Unmarshaller;
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.OutputStream;
-import java.io.PrintWriter;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
-import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -99,11 +81,6 @@ public class StaticHelperMojo extends AbstractMojo {
      * Fail message to display when an error occurs.
      */
     private static final String FAIL_MESSAGE = String.format("Unable to run %s", StaticHelperMojo.class.getName());
-
-    /**
-     * The logger.
-     */
-    private final Logger log = LoggerFactory.getLogger(getClass());
 
     /**
      * Maven project.
@@ -179,72 +156,6 @@ public class StaticHelperMojo extends AbstractMojo {
     }
 
     /**
-     * <p>
-     * Writes the given XML to transform into the disk.
-     * </p>
-     *
-     * @param xmlFile the XML file
-     * @throws JAXBException if JAXB fails
-     * @throws IOException if an I/O error occurs
-     */
-    private void relocateTransformedXml(final File xmlFile) throws JAXBException, IOException {
-
-        // Now load XML configuration to update it in order to use chains of responsibility with static engine
-        final JAXBContext jc = JAXBContext.newInstance(XmlWuicBean.class);
-        final Unmarshaller unmarshaller = jc.createUnmarshaller();
-        final XmlWuicBean bean = (XmlWuicBean) unmarshaller.unmarshal(xmlFile);
-
-        // Override workflow definition
-        final String staticEngineName = "wuic" + StaticEngine.class.getSimpleName() + "Builder";
-        final String workflowTemplateId = staticEngineName + "Template";
-        final XmlWorkflowTemplateBean template = new XmlWorkflowTemplateBean();
-        template.setEngineBuilderIds(Arrays.asList(staticEngineName));
-        template.setUseDefaultEngines(Boolean.FALSE);
-        template.setId(workflowTemplateId);
-
-        if (bean.getWorkflowTemplates() != null) {
-            bean.getWorkflowTemplates().add(template);
-        } else {
-            bean.setWorkflowTemplates(Arrays.asList(template));
-        }
-
-        final XmlWorkflowBean workflow = new XmlWorkflowBean();
-        workflow.setHeapIdPattern(".*");
-        workflow.setWorkflowTemplateId(workflowTemplateId);
-        workflow.setIdPrefix("");
-
-        if (bean.getWorkflows() != null) {
-            bean.getWorkflows().add(workflow);
-        } else {
-            bean.setWorkflows(Arrays.asList(workflow));
-        }
-
-        // Declare the static engine
-        final XmlBuilderBean builder = new XmlBuilderBean();
-        builder.setId(staticEngineName);
-        builder.setType("StaticEngineBuilder");
-
-        bean.setEngineBuilders(Arrays.asList(builder));
-
-        // Write modifies configuration into the disk
-        final File temp = File.createTempFile("tempXml", Long.toString(System.nanoTime()));
-        final File outputXmlFile = new File(temp, "wuic.xml");
-
-        if (!temp.delete() || !temp.mkdirs()) {
-            throw new IOException(String.format("Could not delete temp '%s' directory for transformed XML configuration file: '%s'",
-                    temp.getAbsolutePath(), "wuic.xml"));
-        }
-
-        final Marshaller marshaller = jc.createMarshaller();
-        marshaller.setProperty("jaxb.formatted.output", Boolean.TRUE);
-        marshaller.marshal(bean, outputXmlFile);
-
-        // Include the written file as a resource
-        final List<String> includes = Arrays.asList("wuic.xml");
-        projectHelper.addResource(project, temp.getAbsolutePath(), includes, null);
-    }
-
-    /**
      * {@inheritDoc}
      */
     @Override
@@ -252,46 +163,21 @@ public class StaticHelperMojo extends AbstractMojo {
         try {
             setClasspath();
 
-            // Load wuic.xml file and create facade
-            final File xmlFile = new File(project.getBasedir(), xml);
-            final WuicFacadeBuilder facadeBuilder = new WuicFacadeBuilder()
-                    .contextPath(contextPath)
-                    .wuicXmlPath(xmlFile.toURI().toURL());
+            final Build b = project.getBuild();
+            final String o = b.getOutputDirectory().equals(output) ? output : IOUtils.mergePath(b.getDirectory(), output);
 
-            final WuicFacade facade;
-
-            if (properties == null) {
-                facade = facadeBuilder.build();
-            } else {
-                final File propertyFile = new File(project.getBasedir(), properties);
-                facade = facadeBuilder.wuicPropertiesPath(propertyFile.toURI().toURL()).build();
-            }
-
-            // Now write each workflow result to disk with its description file
-            for (final String wId : facade.workflowIds()) {
-                PrintWriter pw = null;
-
-                try {
-                    final File file = new File(project.getBuild().getOutputDirectory(), String.format(StaticEngine.STATIC_WORKFLOW_FILE, wId));
-
-                    if (!file.getParentFile().mkdirs()) {
-                        log.error("Unable to create '{}' directory", file.getParent());
-                    }
-
-                    pw = new PrintWriter(file);
-                    final List<ConvertibleNut> nuts = facade.runWorkflow(wId, ProcessContext.DEFAULT);
-
-                    for (final ConvertibleNut nut : nuts) {
-                        write(nut, wId, pw, 0);
-                    }
-                } finally {
-                    IOUtils.close(pw);
-                }
-            }
-
-            // No need to continue if we don't want to generate wuic.xml file too
             if (relocateTransformedXml) {
-                relocateTransformedXml(xmlFile);
+                final File temp = File.createTempFile("tempXml", Long.toString(System.nanoTime()));
+
+                if (!temp.delete() || !temp.mkdirs()) {
+                    throw new IOException(String.format("Could not delete temp '%s' directory for transformed XML configuration file",
+                            temp.getAbsolutePath()));
+                }
+
+                final List<String> relocated = new WuicTask(xml, temp.toString(), o, contextPath, properties).executeTask();
+                projectHelper.addResource(project, temp.toString(), relocated, null);
+            } else {
+                new WuicTask(xml, null, o, contextPath, properties).execute();
             }
         } catch (WuicException we) {
             throw new MojoExecutionException(FAIL_MESSAGE, we);
@@ -301,45 +187,6 @@ public class StaticHelperMojo extends AbstractMojo {
             throw new MojoExecutionException(FAIL_MESSAGE, je);
         } catch (IOException ioe) {
             throw new MojoExecutionException(FAIL_MESSAGE, ioe);
-        }
-    }
-
-    /**
-     * <p>
-     * Writes the given net into the output directory.
-     * </p>
-     *
-     * @param nut the nut to be written
-     * @param wId the workflow ID
-     * @param depth the depth computed from referenced nuts chain
-     * @throws WuicException if WUIC fails
-     * @throws IOException if output directory can't be reached or if transformation fails
-     */
-    public void write(final ConvertibleNut nut, final String wId, final PrintWriter workflowWriter, final int depth)
-            throws WuicException, IOException {
-        final String path = nut.getProxyUri() == null ? IOUtils.mergePath(String.valueOf(NutUtils.getVersionNumber(nut)), nut.getName()) : nut.getProxyUri();
-
-        for (int i = 0; i < depth; i++) {
-            workflowWriter.print('\t');
-        }
-
-        workflowWriter.println(String.format("%s %s", path, nut.getInitialNutType().getExtensions()[0]));
-        final File file = new File(project.getBuild().getOutputDirectory().equals(output) ?
-                output : IOUtils.mergePath(project.getBuild().getDirectory(), output), IOUtils.mergePath(wId, String.valueOf(NutUtils.getVersionNumber(nut)), nut.getName()));
-
-        // Create if not exist
-        if (file.getParentFile() != null && file.getParentFile().mkdirs()) {
-            log.debug("{} created", file.getParent());
-        }
-
-        final OutputStream os = new FileOutputStream(file);
-        nut.transform(new Pipe.DefaultOnReady(os));
-
-        // Recursive call on referenced nuts
-        if (nut.getReferencedNuts() != null) {
-            for (final ConvertibleNut ref : nut.getReferencedNuts()) {
-                write(ref, wId, workflowWriter, depth + 1);
-            }
         }
     }
 

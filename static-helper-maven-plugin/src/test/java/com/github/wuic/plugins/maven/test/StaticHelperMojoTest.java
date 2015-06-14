@@ -50,12 +50,16 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 import org.mockito.Mockito;
+import org.mockito.invocation.InvocationOnMock;
+import org.mockito.stubbing.Answer;
 
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.util.List;
+import java.util.concurrent.atomic.AtomicReference;
 
 /**
  * <p>
@@ -92,6 +96,7 @@ public class StaticHelperMojoTest {
         mojo.setContextPath("/");
 
         // Mock
+        final AtomicReference<String> resources = new AtomicReference<String>();
         final MavenProject mavenProject = Mockito.mock(MavenProject.class);
         final Build build = Mockito.mock(Build.class);
         final File out = new File(System.getProperty("java.io.tmpdir"), "wuic-static-test");
@@ -102,6 +107,13 @@ public class StaticHelperMojoTest {
         mojo.setMavenProject(mavenProject);
         final MavenProjectHelper helper = Mockito.mock(MavenProjectHelper.class);
         mojo.setProjectHelper(helper);
+        Mockito.doAnswer(new Answer<Object>() {
+            @Override
+            public Object answer(InvocationOnMock invocationOnMock) throws Throwable {
+                resources.set(invocationOnMock.getArguments()[1].toString());
+                return null;
+            }
+        }).when(helper).addResource(Mockito.any(MavenProject.class), Mockito.anyString(), Mockito.any(List.class), Mockito.any(List.class));
 
         // Invoke
         mojo.execute();
@@ -136,7 +148,7 @@ public class StaticHelperMojoTest {
         final String nutPath = url.substring(endId + 1);
 
         // Read metadata content
-        is = new FileInputStream(new File(out, "wuic-static/" + id));
+        is = new FileInputStream(new File(resources.get(), "wuic-static/" + id));
         final String wuicStatic = IOUtils.readString(new InputStreamReader(is));
         is.close();
 
