@@ -121,6 +121,12 @@ public class StaticHelperMojo extends AbstractMojo {
     private String output;
 
     /**
+     * Charset to use when writing to the disk.
+     */
+    @Parameter(defaultValue = "UTF-8")
+    private String charset;
+
+    /**
      * Base path where every processed statics referenced by HTML will be served.
      */
     @Parameter(defaultValue = "/")
@@ -174,10 +180,10 @@ public class StaticHelperMojo extends AbstractMojo {
                             temp.getAbsolutePath()));
                 }
 
-                final List<String> relocated = new WuicTask(xml, temp.toString(), o, contextPath, properties).executeTask();
+                final List<String> relocated = new WuicTask(xml, temp.toString(), o, contextPath, properties, charset).executeTask();
                 projectHelper.addResource(project, temp.toString(), relocated, null);
             } else {
-                new WuicTask(xml, null, o, contextPath, properties).execute();
+                new WuicTask(xml, null, o, contextPath, properties, charset).execute();
             }
         } catch (WuicException we) {
             throw new MojoExecutionException(FAIL_MESSAGE, we);
