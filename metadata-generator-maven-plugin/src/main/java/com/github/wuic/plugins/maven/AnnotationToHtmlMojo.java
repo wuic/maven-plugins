@@ -38,6 +38,7 @@
 
 package com.github.wuic.plugins.maven;
 
+import com.github.wuic.ApplicationConfig;
 import com.github.wuic.config.ObjectBuilderFactory;
 import com.github.wuic.engine.EngineService;
 import com.github.wuic.nut.dao.NutDaoService;
@@ -61,6 +62,7 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.TreeMap;
 
 /**
@@ -150,17 +152,22 @@ public class AnnotationToHtmlMojo extends AbstractMojo {
 
         // Write a new table for each entry
         for (final Table t : table.values()) {
+            final Set<String> propertyNames = t.getCollectedPropertyNames();
+
             PrintWriter pw = null;
 
             try {
                 pw = new PrintWriter(new FileOutputStream(new File(output, t.getName() + ".html")));
 
-                pw.println("<h3>" + t.getName() + "</h3>");
+                pw.println("<h3>Components discovered under package " + t.getName() + "</h3>");
+                pw.println("<span><b>Note:</b>");
+                pw.println("In property name, <code>*</code> at the beginning of the name should be replaced by <code>");
+                pw.println(ApplicationConfig.PREFIX + "</code></span>");
                 pw.println("<table>");
                 pw.println("<tr><td>Class/Property</td>");
 
                 // The headers is the list fo detected property
-                for (final String property : t.getCollectedPropertyNames()) {
+                for (final String property : propertyNames) {
                     pw.println("<td>" + property + "</td>");
                 }
 

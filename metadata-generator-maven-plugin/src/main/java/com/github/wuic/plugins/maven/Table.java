@@ -38,6 +38,8 @@
 
 package com.github.wuic.plugins.maven;
 
+import com.github.wuic.ApplicationConfig;
+
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
@@ -118,13 +120,19 @@ public class Table {
 
     /**
      * <p>
-     * Gets the collected property names.
+     * Gets the collected property names. The common prefix of all properties will be replaced by a '*' character.
      * </p>
      *
      * @return the property names
      */
     public Set<String> getCollectedPropertyNames() {
-        return collectedPropertyNames;
+        final Set<String> retval = new TreeSet<String>();
+
+        for (final String property : collectedPropertyNames) {
+            retval.add('*' + property.substring(ApplicationConfig.PREFIX.length()));
+        }
+
+        return retval;
     }
 
     /**
