@@ -179,8 +179,8 @@ public class AnnotationToHtmlMojo extends AbstractMojo {
                     pw.print("<td>" + e.getKey() + "</td>");
 
                     // For each property, indicate the default value if applicable
-                    for (final String property : t.getCollectedPropertyNames()) {
-                        final String val = e.getValue().getProperties().get(property);
+                    for (final String property : propertyNames) {
+                        final String val = e.getValue().getProperties().get(ApplicationConfig.PREFIX + property.substring(1));
 
                         pw.print("<td>");
 
