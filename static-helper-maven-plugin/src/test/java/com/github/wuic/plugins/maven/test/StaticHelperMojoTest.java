@@ -80,7 +80,7 @@ public class StaticHelperMojoTest {
      * @throws MojoExecutionException if test fails
      * @throws IOException if test fails
      */
-    @Test
+    @Test(timeout = 60000)
     public void defaultTest() throws MojoExecutionException, IOException {
         final String wuicXml = IOUtils.normalizePathSeparator(getClass().getResource("/wuic.xml").toString());
         final String wuicProperties = IOUtils.normalizePathSeparator(getClass().getResource("/wuic.properties").toString());

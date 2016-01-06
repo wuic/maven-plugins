@@ -78,7 +78,7 @@ public class AnnoToAdocMojoTest {
      * @throws MojoExecutionException if test fails
      * @throws IOException if test fails
      */
-    @Test
+    @Test(timeout = 60000)
     public void defaultTest() throws MojoExecutionException, IOException {
         // Create MOJO
         final AnnotationToHtmlMojo mojo = new AnnotationToHtmlMojo();
