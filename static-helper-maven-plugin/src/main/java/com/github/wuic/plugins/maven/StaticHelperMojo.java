@@ -161,6 +161,27 @@ public class StaticHelperMojo extends AbstractMojo {
     }
 
     /**
+     * <p>
+     * Loads the active profiles.
+     * </p>
+     *
+     * @return the active profiles
+     */
+    private String loadProfiles() {
+        if (project.getActiveProfiles() == null || project.getActiveProfiles().isEmpty()) {
+            return null;
+        }
+
+        final StringBuilder profiles = new StringBuilder();
+
+        for (final Object profile : project.getActiveProfiles()) {
+            profiles.append(',').append(String.valueOf(profile));
+        }
+
+        return profiles.substring(1);
+    }
+
+    /**
      * {@inheritDoc}
      */
     @Override
@@ -179,10 +200,12 @@ public class StaticHelperMojo extends AbstractMojo {
                             temp.getAbsolutePath()));
                 }
 
-                final List<String> relocated = new WuicTask(xml, temp.toString(), o, contextPath, properties, charset).executeTask();
+                final String profiles = loadProfiles();
+
+                final List<String> relocated = new WuicTask(xml, temp.toString(), o, contextPath, properties, charset, profiles).executeTask();
                 projectHelper.addResource(project, temp.toString(), relocated, null);
             } else {
-                new WuicTask(xml, null, o, contextPath, properties, charset).execute();
+                new WuicTask(xml, null, o, contextPath, properties, charset, null).execute();
             }
         } catch (WuicException we) {
             throw new MojoExecutionException(FAIL_MESSAGE, we);
