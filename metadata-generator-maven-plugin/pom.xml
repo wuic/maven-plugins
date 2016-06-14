@@ -26,11 +26,6 @@
             <artifactId>wuic-core</artifactId>
             <version>${project.version}</version>
         </dependency>
-        <dependency>
-            <groupId>eu.infomas</groupId>
-            <artifactId>annotation-detector</artifactId>
-            <version>3.0.5-SNAPSHOT</version>
-        </dependency>
 
         <!-- Tests -->
         <dependency>
