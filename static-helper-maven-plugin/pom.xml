@@ -35,6 +35,11 @@
             <artifactId>maven-artifact</artifactId>
             <scope>test</scope>
         </dependency>
+        <dependency>
+            <groupId>com.github.wuic.extensions</groupId>
+            <artifactId>wuic-attoparser</artifactId>
+            <version>${project.version}</version>
+        </dependency>
     </dependencies>
 
     <build>

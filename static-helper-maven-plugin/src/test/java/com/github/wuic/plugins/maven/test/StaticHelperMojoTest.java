@@ -128,9 +128,8 @@ public class StaticHelperMojoTest {
         Assert.assertTrue(found);
 
         InputStream is;
-        files = new File(parent, "html").listFiles();
-        File html = null;
-        for (int i = 0; i < files.length && html == null; html = files[i++].listFiles()[0].getName().endsWith(".html") ? files[i - 1].listFiles()[0] : null);
+        files = new File(parent, "html-trevor").listFiles();
+        final File html = find(files, ".html");
         Assert.assertNotNull(html);
 
         // Read html content
@@ -156,5 +155,30 @@ public class StaticHelperMojoTest {
 
         // Assert resources are closed
         TestHelper.delete(out);
+    }
+
+    /**
+     * <p>
+     * Finds the first file ending with the given suffix.
+     * </p>
+     *
+     * @param files the files
+     * @param suffix the suffix
+     * @return the file
+     */
+    private File find(final File[] files, final String suffix) {
+        for (final File file : files) {
+            if (file.getName().endsWith(suffix)) {
+                return file;
+            } else if (file.listFiles() != null) {
+                final File child = find(file.listFiles(), suffix);
+
+                if (child != null) {
+                    return child;
+                }
+            }
+        }
+
+        return null;
     }
 }

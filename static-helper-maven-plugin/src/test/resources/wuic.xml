@@ -8,8 +8,11 @@
         <heap id="css">
             <nut-path>.*.css</nut-path>
         </heap>
-        <heap id="html">
-            <nut-path>index.html</nut-path>
+        <heap id="html-trevor">
+            <nut-path>.*indextrevor.html</nut-path>
+        </heap>
+        <heap id="html-css">
+            <nut-path>indexcss.html</nut-path>
         </heap>
     </heaps>
 </wuic>
