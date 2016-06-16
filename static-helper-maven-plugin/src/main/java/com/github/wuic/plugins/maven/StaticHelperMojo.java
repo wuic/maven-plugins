@@ -132,6 +132,12 @@ public class StaticHelperMojo extends AbstractMojo {
     private String contextPath;
 
     /**
+     * Pattern matching name of files to keep on the top of directory structure.
+     */
+    @Parameter
+    private String moveToTopDirPattern;
+
+    /**
      * <p>
      * Adds into the classpath the project's resources.
      * </p>
@@ -191,6 +197,14 @@ public class StaticHelperMojo extends AbstractMojo {
 
             final Build b = project.getBuild();
             final String o = b.getOutputDirectory().equals(output) ? output : IOUtils.mergePath(b.getDirectory(), output);
+            final WuicTask task = new WuicTask();
+            task.setXml(xml);
+            task.setContextPath(contextPath);
+            task.setProperties(properties);
+            task.setCharset(charset);
+            task.setProfiles(loadProfiles());
+            task.setOutput(o);
+            task.setMoveToTopDirPattern(moveToTopDirPattern);
 
             if (relocateTransformedXml) {
                 final File temp = File.createTempFile("tempXml", Long.toString(System.nanoTime()));
@@ -200,12 +214,11 @@ public class StaticHelperMojo extends AbstractMojo {
                             temp.getAbsolutePath()));
                 }
 
-                final String profiles = loadProfiles();
-
-                final List<String> relocated = new WuicTask(xml, temp.toString(), o, contextPath, properties, charset, profiles).executeTask();
+                task.setRelocateTransformedXmlTo(temp.toString());
+                final List<String> relocated = task.executeTask();
                 projectHelper.addResource(project, temp.toString(), relocated, null);
             } else {
-                new WuicTask(xml, null, o, contextPath, properties, charset, null).execute();
+                task.execute();
             }
         } catch (WuicException we) {
             throw new MojoExecutionException(FAIL_MESSAGE, we);
