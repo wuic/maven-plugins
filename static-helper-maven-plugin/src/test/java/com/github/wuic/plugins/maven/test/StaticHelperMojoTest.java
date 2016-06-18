@@ -46,7 +46,9 @@ import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.project.MavenProject;
 import org.apache.maven.project.MavenProjectHelper;
 import org.junit.Assert;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.Timeout;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 import org.mockito.Mockito;
@@ -73,6 +75,12 @@ import java.util.concurrent.atomic.AtomicReference;
 public class StaticHelperMojoTest {
 
     /**
+     * Timeout.
+     */
+    @Rule
+    public Timeout globalTimeout = Timeout.seconds(60);
+
+    /**
      * <p>
      * Default test.
      * </p>
@@ -80,7 +88,7 @@ public class StaticHelperMojoTest {
      * @throws MojoExecutionException if test fails
      * @throws IOException if test fails
      */
-    @Test(timeout = 60000)
+    @Test
     public void defaultTest() throws MojoExecutionException, IOException {
         final String wuicXml = IOUtils.normalizePathSeparator(getClass().getResource("/wuic.xml").toString());
         final String wuicProperties = IOUtils.normalizePathSeparator(getClass().getResource("/wuic.properties").toString());

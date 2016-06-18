@@ -47,6 +47,7 @@ import org.junit.Assert;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
+import org.junit.rules.Timeout;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
@@ -71,6 +72,12 @@ public class AnnoToAdocMojoTest {
     public TemporaryFolder temporaryFolder = new TemporaryFolder();
 
     /**
+     * Timeout.
+     */
+    @Rule
+    public Timeout globalTimeout = Timeout.seconds(60);
+
+    /**
      * <p>
      * Default test.
      * </p>
@@ -78,7 +85,7 @@ public class AnnoToAdocMojoTest {
      * @throws MojoExecutionException if test fails
      * @throws IOException if test fails
      */
-    @Test(timeout = 60000)
+    @Test
     public void defaultTest() throws MojoExecutionException, IOException {
         // Create MOJO
         final AnnotationToHtmlMojo mojo = new AnnotationToHtmlMojo();
