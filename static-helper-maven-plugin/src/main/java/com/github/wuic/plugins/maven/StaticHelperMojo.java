@@ -98,7 +98,7 @@ public class StaticHelperMojo extends AbstractMojo {
     /**
      * The "xml" configuration parameter.
      */
-    @Parameter(required = true)
+    @Parameter
     private String xml;
 
     /**
@@ -136,6 +136,30 @@ public class StaticHelperMojo extends AbstractMojo {
      */
     @Parameter
     private String moveToTopDirPattern;
+
+    /**
+     * Base directory to scan.
+     */
+    @Parameter
+    private String baseDir;
+
+    /**
+     * The path to detect.
+     */
+    @Parameter
+    private String path;
+
+    /**
+     * The task name used to configure heap ID resolving the configured paths and base directory.
+     */
+    @Parameter(defaultValue = "wuic-task")
+    private String taskName;
+
+    /**
+     * Consider the path as a regex instead of a regex.
+     */
+    @Parameter(defaultValue = "false")
+    private String useRegex;
 
     /**
      * <p>
@@ -205,6 +229,10 @@ public class StaticHelperMojo extends AbstractMojo {
             task.setProfiles(loadProfiles());
             task.setOutput(o);
             task.setMoveToTopDirPattern(moveToTopDirPattern);
+            task.setBaseDir(baseDir);
+            task.setPath(path);
+            task.setTaskName(taskName);
+            task.setUseRegex(Boolean.parseBoolean(useRegex));
 
             if (relocateTransformedXml) {
                 final File temp = File.createTempFile("tempXml", Long.toString(System.nanoTime()));
