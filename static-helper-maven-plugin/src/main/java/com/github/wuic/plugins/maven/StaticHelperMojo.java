@@ -162,6 +162,12 @@ public class StaticHelperMojo extends AbstractMojo {
     private String useRegex;
 
     /**
+     * Package the output as a JAR file. The JAR is written to{@link #output}.
+     */
+    @Parameter(defaultValue = "true")
+    private String packageAsJar;
+
+    /**
      * <p>
      * Adds into the classpath the project's resources.
      * </p>
@@ -233,6 +239,7 @@ public class StaticHelperMojo extends AbstractMojo {
             task.setPath(path);
             task.setTaskName(taskName);
             task.setUseRegex(Boolean.parseBoolean(useRegex));
+            task.setPackageAsJar(Boolean.parseBoolean(packageAsJar));
 
             if (relocateTransformedXml) {
                 final File temp = File.createTempFile("tempXml", Long.toString(System.nanoTime()));
