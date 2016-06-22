@@ -69,7 +69,24 @@ public class Table {
         /**
          * The properties.
          */
-        private Map<String, String> properties = new TreeMap<String, String>();
+        private final Map<String, String> properties;
+
+        /**
+         * The annotated type.
+         */
+        private final Class<?> type;
+
+        /**
+         * <p>
+         * Builds a new annotation info.
+         * </p>
+         *
+         * @param type the annotated type
+         */
+        AnnotationInfo(final Class<?> type) {
+            this.type = type;
+            this.properties = new TreeMap<String, String>();
+        }
 
         /**
          * <p>
@@ -78,8 +95,19 @@ public class Table {
          *
          * @return the properties
          */
-        public Map<String, String> getProperties() {
+        Map<String, String> getProperties() {
             return properties;
+        }
+
+        /**
+         * <p>
+         * Gets the annotated class.
+         * </p>
+         *
+         * @return the annotated class
+         */
+        Class<?> getType() {
+            return type;
         }
     }
 
@@ -155,14 +183,14 @@ public class Table {
      * @param annotatedClass the class
      * @param value the default value
      */
-    public void newCouple(final String annotatedClass, final String propertyKey, final String value) {
+    public void newCouple(final AnnotatedClass annotatedClass, final String propertyKey, final String value) {
         collectedPropertyNames.add(propertyKey);
-        AnnotationInfo annotationInfo = annotationInfoMap.get(annotatedClass);
+        AnnotationInfo annotationInfo = annotationInfoMap.get(annotatedClass.getType().getTypeName());
 
         // First property for this class
         if (annotationInfo == null) {
-            annotationInfo = new AnnotationInfo();
-            annotationInfoMap.put(annotatedClass, annotationInfo);
+            annotationInfo = new AnnotationInfo(annotatedClass.getType().getClassType());
+            annotationInfoMap.put(annotatedClass.getType().getTypeName(), annotationInfo);
         }
 
         annotationInfo.properties.put(propertyKey, value);

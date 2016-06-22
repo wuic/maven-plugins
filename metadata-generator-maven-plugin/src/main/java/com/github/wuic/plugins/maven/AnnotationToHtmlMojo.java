@@ -40,6 +40,7 @@ package com.github.wuic.plugins.maven;
 
 import com.github.wuic.ApplicationConfig;
 import com.github.wuic.config.ObjectBuilderFactory;
+import com.github.wuic.context.ContextBuilder;
 import com.github.wuic.engine.EngineService;
 import com.github.wuic.nut.dao.NutDaoService;
 import com.github.wuic.nut.filter.NutFilterService;
@@ -164,7 +165,7 @@ public class AnnotationToHtmlMojo extends AbstractMojo {
                 pw.println("In property name, <code>*</code> at the beginning of the name should be replaced by <code>");
                 pw.println(ApplicationConfig.PREFIX + "</code></span>");
                 pw.println("<table>");
-                pw.println("<tr><td>Class/Property</td>");
+                pw.println("<tr><td>Class/Property</td><td>Default ID</td>");
 
                 // The headers is the list fo detected property
                 for (final String property : propertyNames) {
@@ -177,6 +178,7 @@ public class AnnotationToHtmlMojo extends AbstractMojo {
                 for (final Map.Entry<String, Table.AnnotationInfo> e : t.getAnnotationInfoMap().entrySet()) {
                     pw.print("<tr>");
                     pw.print("<td>" + e.getKey() + "</td>");
+                    pw.print("<td>" + ContextBuilder.getDefaultBuilderId(e.getValue().getType()) + "</td>");
 
                     // For each property, indicate the default value if applicable
                     for (final String property : propertyNames) {
@@ -230,7 +232,7 @@ public class AnnotationToHtmlMojo extends AbstractMojo {
 
             for (final Map.Entry<String, Object> entry : annotatedClass.getProperties().entrySet()) {
                 final String cle = entry.getKey();
-                tableOfThePackage.newCouple(annotatedClass.getType().getTypeName(), cle, toString(entry.getValue()));
+                tableOfThePackage.newCouple(annotatedClass, cle, toString(entry.getValue()));
             }
         }
 
