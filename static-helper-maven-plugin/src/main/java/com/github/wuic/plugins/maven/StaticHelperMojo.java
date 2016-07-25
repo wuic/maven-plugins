@@ -120,12 +120,6 @@ public class StaticHelperMojo extends AbstractMojo {
     private String output;
 
     /**
-     * Charset to use when writing to the disk.
-     */
-    @Parameter(defaultValue = "UTF-8")
-    private String charset;
-
-    /**
      * Base path where every processed statics referenced by HTML will be served.
      */
     @Parameter(defaultValue = "/")
@@ -231,7 +225,6 @@ public class StaticHelperMojo extends AbstractMojo {
             task.setXml(xml);
             task.setContextPath(contextPath);
             task.setProperties(properties);
-            task.setCharset(charset);
             task.setProfiles(loadProfiles());
             task.setOutput(o);
             task.setMoveToTopDirPattern(moveToTopDirPattern);
